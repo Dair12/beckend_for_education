@@ -1,16 +1,9 @@
 from django.urls import path
-from .views import (
-    UserAnswerListView, UserAnswerCreateView,
-    UserAnswersByTestView, UserAnswersByUserView,
-    SubmitResultsView
-)
-
-app_name = 'answers'
+from .views import UserAnswerListCreateView, UserAnswersByTestView, UserAnswersByUserView, ResultSubmissionView
 
 urlpatterns = [
-    path('user-answers/', UserAnswerListView.as_view(), name='user-answer-list'),
-    path('user-answers/create/', UserAnswerCreateView.as_view(), name='user-answer-create'),
+    path('user-answers/', UserAnswerListCreateView.as_view(), name='user-answers-list-create'),
     path('user-answers/test/<int:test_id>/', UserAnswersByTestView.as_view(), name='user-answers-by-test'),
     path('user-answers/user/<int:user_id>/', UserAnswersByUserView.as_view(), name='user-answers-by-user'),
-    path('results/submit/', SubmitResultsView.as_view(), name='submit-results'),
+    path('results/submit/', ResultSubmissionView.as_view(), name='results-submit'),
 ]

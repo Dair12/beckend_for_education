@@ -4,8 +4,6 @@ from .views import (
     UserUpdateView, UserDeleteView, UserStatisticsView
 )
 
-app_name = 'users'
-
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/register/', RegisterView.as_view(), name='register'),

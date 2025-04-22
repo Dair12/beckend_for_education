@@ -1,55 +1,70 @@
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status, generics
-from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from .models import UserTest, TestQuestion
-from .serializers import UserTestSerializer, UserTestCreateSerializer, TestQuestionSerializer
+from .serializers import UserTestSerializer, UserTestCreateSerializer, UserTestCompleteSerializer
 from questions.models import Question
+import random
 
-class UserTestListView(generics.ListAPIView):
+class UserTestViewSet(viewsets.ModelViewSet):
     queryset = UserTest.objects.all()
     serializer_class = UserTestSerializer
 
-class UserTestDetailView(generics.RetrieveAPIView):
-    queryset = UserTest.objects.all()
-    serializer_class = UserTestSerializer
-    lookup_field = 'id'
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserTestCreateSerializer
+        elif self.action == 'complete':
+            return UserTestCompleteSerializer
+        return UserTestSerializer
 
-class UserTestCreateView(APIView):
-    def post(self, request):
-        serializer = UserTestCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            user_test = serializer.save()
-            # Automatically assign questions from the exam's subject
-            questions = Question.objects.filter(subject__exam=user_test.exam)[:10]
-            for idx, question in enumerate(questions, start=1):
-                TestQuestion.objects.create(test=user_test, question=question, question_order=idx)
-            return Response({
-                'message': 'User test created successfully',
-                'test': UserTestSerializer(user_test).data
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_test = serializer.save()
 
-class UserTestCompleteView(APIView):
-    def put(self, request, id):
-        try:
-            user_test = UserTest.objects.get(id=id)
-            user_test.completed_at = timezone.now()
-            user_test.save()
-            return Response({'message': f'User test {id} completed successfully'}, status=status.HTTP_200_OK)
-        except UserTest.DoesNotExist:
-            return Response({'message': 'Test not found'}, status=status.HTTP_404_NOT_FOUND)
+        # Логика генерации вопросов для теста (пример)
+        exam = user_test.exam
+        questions = Question.objects.filter(subject_id__in=exam.subjects.all())[:exam.default_question_count]
+        for index, question in enumerate(questions, start=1):
+            TestQuestion.objects.create(
+                test=user_test,
+                variant_question=question,
+                question_order=index
+            )
 
-class UserTestsByUserView(generics.ListAPIView):
-    serializer_class = UserTestSerializer
+        return Response({
+            "message": "User test created successfully",
+            "test": UserTestSerializer(user_test).data
+        }, status=status.HTTP_201_CREATED)
 
-    def get_queryset(self):
-        user_id = self.kwargs['user_id']
-        return UserTest.objects.filter(user_id=user_id)
+    @action(detail=True, methods=['patch'], url_path='complete')
+    def complete(self, request, pk=None):
+        user_test = get_object_or_404(UserTest, pk=pk)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-class TestQuestionsView(generics.ListAPIView):
-    serializer_class = TestQuestionSerializer
+        user_test.completed_at = serializer.validated_data['completed_at']
+        user_test.save()
 
-    def get_queryset(self):
-        test_id = self.kwargs['test_id']
-        return TestQuestion.objects.filter(test_id=test_id)
+        # Логика обработки ответов (пример)
+        for answer in serializer.validated_data['answers']:
+            # Здесь можно сохранить ответы в модель UserAnswer
+            pass
+
+        return Response({
+            "message": f"User test {pk} completed successfully"
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='user/(?P<user_id>\d+)')
+    def by_user(self, request, user_id=None):
+        tests = UserTest.objects.filter(user_id=user_id)
+        serializer = self.get_serializer(tests, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='questions')
+    def test_questions(self, request, pk=None):
+        test = get_object_or_404(UserTest, pk=pk)
+        test_questions = TestQuestion.objects.filter(test=test)
+        serializer = TestQuestionSerializer(test_questions, many=True)
+        return Response(serializer.data)
