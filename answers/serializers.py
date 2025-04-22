@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import UserAnswer
-from tests.models import UserTest
+from user_tests.models import UserTest
 from questions.models import Question
 from users.models import User
 
@@ -36,8 +36,7 @@ class ResultSubmissionSerializer(serializers.Serializer):
     test_id = serializers.IntegerField()
     answers = serializers.ListField(
         child=serializers.DictField(
-            child=serializers.IntegerField(),
-            required_fields=['question_id', 'chosen_option']
+            child=serializers.IntegerField()
         )
     )
 
@@ -47,9 +46,19 @@ class ResultSubmissionSerializer(serializers.Serializer):
             raise serializers.ValidationError("Test does not exist.")
         
         for answer in data['answers']:
-            question = Question.objects.filter(id=answer['question_id']).first()
+            # Проверка наличия обязательных ключей
+            if 'question_id' not in answer or 'chosen_option' not in answer:
+                raise serializers.ValidationError("Each answer must contain 'question_id' and 'chosen_option'.")
+            
+            # Проверка типов и значений
+            question_id = answer['question_id']
+            chosen_option = answer['chosen_option']
+            
+            question = Question.objects.filter(id=question_id).first()
             if not question:
-                raise serializers.ValidationError(f"Question {answer['question_id']} does not exist.")
-            if answer['chosen_option'] not in range(1, 6):
-                raise serializers.ValidationError(f"Invalid chosen option for question {answer['question_id']}.")
+                raise serializers.ValidationError(f"Question {question_id} does not exist.")
+            
+            if chosen_option not in range(1, 6):
+                raise serializers.ValidationError(f"Invalid chosen option {chosen_option} for question {question_id}.")
+        
         return data

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import UserAnswer
 from .serializers import UserAnswerSerializer, ResultSubmissionSerializer
-from tests.models import UserTest
+from user_tests.models import UserTest
 from django.db import transaction
 from questions.models import Question
 

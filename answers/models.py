@@ -3,7 +3,7 @@ from django.conf import settings
 
 
 class UserAnswer(models.Model):
-    test = models.ForeignKey('tests.UserTest', on_delete=models.CASCADE)
+    test = models.ForeignKey('user_tests.UserTest', on_delete=models.CASCADE)
     variant_question = models.ForeignKey('questions.Question', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     chosen_option_number = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
