@@ -34,8 +34,9 @@ class QuestionDeleteView(generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
+        question_id = instance.id
         instance.delete()
-        return Response({"message": f"Question {instance.id} deleted successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": f"Question {question_id} deleted successfully"}, status=status.HTTP_200_OK)
 
 class QuestionsBySubjectView(generics.ListAPIView):
     serializer_class = QuestionSerializer

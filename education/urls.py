@@ -22,7 +22,7 @@ urlpatterns = [
     path('', include('users.urls')),
     path('', include('exams.urls')),
     path('', include('subjects.urls', namespace='subjects')),
-    path('questions/', include('questions.urls')),
+    path('', include('questions.urls')),
     path('', include('user_tests.urls')),
     path('', include('answers.urls')),
 ]
