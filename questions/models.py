@@ -2,13 +2,16 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class QuestionType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    exam = models.ForeignKey('exams.Exam', on_delete=models.CASCADE, related_name='question_types')
+    position = models.PositiveIntegerField()
+    name = models.CharField(max_length=100)
 
     class Meta:
         db_table = 'question_types'
+        unique_together = ('exam', 'position')  # Чтобы не было дубликатов номеров
 
     def __str__(self):
-        return self.name
+        return f"{self.exam.name} - {self.position}: {self.name}"
 
 class Question(models.Model):
     LEVEL_CHOICES = (

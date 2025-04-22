@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import UserTest, TestQuestion
-from .serializers import UserTestSerializer, UserTestCreateSerializer, UserTestCompleteSerializer
+from .serializers import UserTestSerializer, UserTestCreateSerializer, UserTestCompleteSerializer, TestQuestionSerializer
 from questions.models import Question
 import random
 

@@ -1,11 +1,16 @@
 from rest_framework import serializers
 from .models import Exam
+from subjects.models import Subject
 
 class ExamSerializer(serializers.ModelSerializer):
+    subjects = serializers.SerializerMethodField()
+
     class Meta:
         model = Exam
-        fields = ['id', 'exam_code', 'name', 'has_fixed_structure', 'default_question_count', 'time_to_complete', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'exam_code', 'name', 'has_fixed_structure', 'default_question_count', 'time_to_complete', 'created_at', 'subjects']
+
+    def get_subjects(self, obj):
+        return [subject.name for subject in obj.subjects.all()]
 
 class ExamCreateSerializer(serializers.ModelSerializer):
     class Meta:

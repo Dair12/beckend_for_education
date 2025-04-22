@@ -9,9 +9,9 @@ app_name = 'subjects'
 
 urlpatterns = [
     # Предметы
-    path('', SubjectListCreateView.as_view(), name='subject-list-create'),
-    path('<int:pk>/', SubjectDetailView.as_view(), name='subject-detail'),
-    path('create/', SubjectListCreateView.as_view(), name='subject-create'),  # POST для создания
+    path('subjects/', SubjectListCreateView.as_view(), name='subject-list-create'),
+    path('subjects/<int:pk>/', SubjectDetailView.as_view(), name='subject-detail'),
+    path('subjects/create/', SubjectListCreateView.as_view(), name='subject-create'),  # POST для создания
 
     # Разделы предметов
     path('subject-sections/', SubjectSectionListCreateView.as_view(), name='section-list-create'),

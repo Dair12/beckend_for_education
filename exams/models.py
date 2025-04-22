@@ -7,6 +7,7 @@ class Exam(models.Model):
     default_question_count = models.IntegerField()
     time_to_complete = models.IntegerField()  # В минутах
     created_at = models.DateTimeField(auto_now_add=True)
+    subjects = models.ManyToManyField('subjects.Subject', related_name='exams')
 
     class Meta:
         db_table = 'exams'
