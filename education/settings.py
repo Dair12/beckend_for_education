@@ -39,6 +39,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'users',
+    'exams',
+    'subjects',
+    'questions',
+    'user_tests',
+    'answers',
 ]
 
 MIDDLEWARE = [
