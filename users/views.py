@@ -5,7 +5,7 @@ from rest_framework import status, generics
 from django.contrib.auth.hashers import check_password
 from .models import User
 from .serializers import UserSerializer, LoginSerializer, RegisterSerializer, UserStatisticsSerializer
-from tests.models import UserTest, UserAnswer  # Импорт из приложения tests
+from user_tests.models import UserTest, UserAnswer  # Импорт из приложения tests
 
 class LoginView(APIView):
     def post(self, request):
