@@ -23,9 +23,9 @@ class UserTestViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user_test = serializer.save()
 
-        # Логика генерации вопросов для теста (пример)
-        exam = user_test.exam
-        questions = Question.objects.filter(subject_id__in=exam.subjects.all())[:exam.default_question_count]
+        # Логика генерации вопросов для теста на основе section
+        section = user_test.section
+        questions = Question.objects.filter(section=section)[:section.default_question_count]  # Фильтрация по section
         for index, question in enumerate(questions, start=1):
             TestQuestion.objects.create(
                 test=user_test,

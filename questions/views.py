@@ -4,7 +4,6 @@ from rest_framework import status, generics
 from django.shortcuts import get_object_or_404
 from .models import Question, QuestionType
 from .serializers import QuestionSerializer, QuestionTypeSerializer, AddOptionSerializer, AddMultipleOptionsSerializer
-from subjects.models import Subject, SubjectSection
 
 class QuestionListView(generics.ListAPIView):
     queryset = Question.objects.all()
@@ -37,13 +36,6 @@ class QuestionDeleteView(generics.DestroyAPIView):
         question_id = instance.id
         instance.delete()
         return Response({"message": f"Question {question_id} deleted successfully"}, status=status.HTTP_200_OK)
-
-class QuestionsBySubjectView(generics.ListAPIView):
-    serializer_class = QuestionSerializer
-
-    def get_queryset(self):
-        subject_id = self.kwargs['subject_id']
-        return Question.objects.filter(subject_id=subject_id)
 
 class QuestionsBySectionView(generics.ListAPIView):
     serializer_class = QuestionSerializer

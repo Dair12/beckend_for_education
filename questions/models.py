@@ -1,17 +1,18 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from exam_sections.models import Section  # Импорт новой модели Section
 
 class QuestionType(models.Model):
-    exam = models.ForeignKey('exams.Exam', on_delete=models.CASCADE, related_name='question_types')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='question_types')
     position = models.PositiveIntegerField()
     name = models.CharField(max_length=100)
 
     class Meta:
         db_table = 'question_types'
-        unique_together = ('exam', 'position')  # Чтобы не было дубликатов номеров
+        unique_together = ('section', 'position')  # Уникальность по section и position
 
     def __str__(self):
-        return f"{self.exam.name} - {self.position}: {self.name}"
+        return f"{self.section.exam} - {self.section.subject} - {self.section.section} - {self.position}: {self.name}"
 
 class Question(models.Model):
     LEVEL_CHOICES = (
@@ -21,8 +22,7 @@ class Question(models.Model):
     )
 
     admin = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='questions')
-    subject = models.ForeignKey('subjects.Subject', on_delete=models.CASCADE, related_name='questions')
-    section = models.ForeignKey('subjects.SubjectSection', on_delete=models.SET_NULL, null=True, blank=True, related_name='questions')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='questions')  # Ссылка на Section
     question_text = models.TextField()
     image_path = models.CharField(max_length=255, null=True, blank=True)
     option_1 = models.TextField()
