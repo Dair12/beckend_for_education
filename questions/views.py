@@ -5,6 +5,14 @@ from django.shortcuts import get_object_or_404
 from .models import Question, QuestionType
 from .serializers import QuestionSerializer, QuestionTypeSerializer, AddOptionSerializer, AddMultipleOptionsSerializer
 
+class BulkQuestionCreateView(APIView):
+    def post(self, request):
+        serializer = QuestionSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": f"{len(serializer.data)} questions created successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class QuestionListView(generics.ListAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
@@ -43,6 +51,13 @@ class QuestionsBySectionView(generics.ListAPIView):
     def get_queryset(self):
         section_id = self.kwargs['section_id']
         return Question.objects.filter(section_id=section_id)
+
+class QuestionsByUserView(generics.ListAPIView):
+    serializer_class = QuestionSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Question.objects.filter(admin_id=user_id)
 
 class AddOptionView(APIView):
     def post(self, request):

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Question, QuestionType
-from exam_sections.models import Section  # Импорт Section
+from exam_sections.models import Section
 from users.models import User
 
 class QuestionTypeSerializer(serializers.ModelSerializer):
@@ -8,13 +8,38 @@ class QuestionTypeSerializer(serializers.ModelSerializer):
         model = QuestionType
         fields = ['id', 'name']
 
+
+class BulkQuestionCreateSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        questions = [Question(**item) for item in validated_data]
+        return Question.objects.bulk_create(questions)
+
 class QuestionSerializer(serializers.ModelSerializer):
     admin_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='admin')
-    section_id = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), source='section')  # Ссылка на Section
+    section_id = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), source='section')
     type_id = serializers.PrimaryKeyRelatedField(queryset=QuestionType.objects.all(), source='type', allow_null=True)
+
+    def validate(self, data):
+        # Проверяем, что type_id соответствует допустимому QuestionType для раздела
+        section = data.get('section')
+        type_instance = data.get('type')
+
+        if type_instance:
+            # Проверяем, что QuestionType принадлежит указанному разделу
+            if type_instance.section != section:
+                raise serializers.ValidationError(
+                    "QuestionType does not belong to the specified section."
+                )
+            # Проверяем, что position QuestionType не превышает default_question_count
+            if type_instance.position > section.default_question_count:
+                raise serializers.ValidationError(
+                    f"QuestionType position exceeds section's default_question_count ({section.default_question_count})."
+                )
+        return data
 
     class Meta:
         model = Question
+        list_serializer_class = BulkQuestionCreateSerializer
         fields = [
             'id', 'admin_id', 'section_id', 'question_text', 'image_path',
             'option_1', 'option_2', 'option_3', 'option_4', 'option_5', 'correct_option',

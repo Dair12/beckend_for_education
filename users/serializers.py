@@ -30,6 +30,25 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class AdminRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['name', 'email', 'password']
+        extra_kwargs = {'role': {'default': 'Admin'}}
+
+    def create(self, validated_data):
+        # Создание администратора с хешированным паролем
+        user = User(
+            name=validated_data['name'],
+            email=validated_data['email'],
+            password_hash=validated_data['password'],
+            role='Admin'
+        )
+        user.save()
+        return user
+
 class UserStatisticsSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     tests_completed = serializers.IntegerField()

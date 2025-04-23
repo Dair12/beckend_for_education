@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from django.contrib.auth.hashers import check_password
 from .models import User
-from .serializers import UserSerializer, LoginSerializer, RegisterSerializer, UserStatisticsSerializer
+from .serializers import UserSerializer, LoginSerializer, RegisterSerializer, UserStatisticsSerializer, AdminRegisterSerializer
 from user_tests.models import UserTest
 from answers.models import UserAnswer
 
@@ -35,6 +35,18 @@ class RegisterView(APIView):
             return Response({
                 'message': 'Registration successful',
                 'user_id': user.id
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminRegisterView(APIView):
+    def post(self, request):
+        serializer = AdminRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'message': 'Admin registration successful',
+                'user_id': user.id,
+                'role': user.role
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
