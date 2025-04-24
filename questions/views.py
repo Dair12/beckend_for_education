@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from django.shortcuts import get_object_or_404
-from .models import Question, QuestionType
-from .serializers import QuestionSerializer, QuestionTypeSerializer, AddOptionSerializer, AddMultipleOptionsSerializer
+from .models import Question
+from .serializers import QuestionSerializer, AddOptionSerializer, AddMultipleOptionsSerializer
 
 class BulkQuestionCreateView(APIView):
     def post(self, request):

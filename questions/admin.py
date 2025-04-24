@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Question, QuestionType
+from .models import Question
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
@@ -12,11 +12,3 @@ class QuestionAdmin(admin.ModelAdmin):
     def question_text_short(self, obj):
         return obj.question_text[:50] + ('...' if len(obj.question_text) > 50 else '')
     question_text_short.short_description = 'Question Text'
-
-@admin.register(QuestionType)
-class QuestionTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'section', 'position')
-    list_filter = ('section',)
-    search_fields = ('name', 'section__exam', 'section__subject', 'section__section')
-    list_select_related = ('section',)
-    ordering = ('section', 'position')

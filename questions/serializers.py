@@ -1,13 +1,8 @@
 from rest_framework import serializers
-from .models import Question, QuestionType
+from .models import Question
 from exam_sections.models import Section
 from users.models import User
 import base64
-
-class QuestionTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = QuestionType
-        fields = ['id', 'name']
 
 class BulkQuestionCreateSerializer(serializers.ListSerializer):
     def create(self, validated_data):
@@ -36,30 +31,26 @@ class Base64ImageField(serializers.Field):
 class QuestionSerializer(serializers.ModelSerializer):
     admin_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='admin')
     section_id = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), source='section')
-    type_id = serializers.PrimaryKeyRelatedField(queryset=QuestionType.objects.all(), source='type', allow_null=True)
 
     question_image = Base64ImageField(required=False, allow_null=True)
     description_image = Base64ImageField(required=False, allow_null=True)
 
     def validate(self, data):
         section = data.get('section')
-        type_instance = data.get('type')
-
-        if type_instance:
-            if type_instance.section != section:
-                raise serializers.ValidationError("QuestionType does not belong to the specified section.")
-            if hasattr(section, 'default_question_count') and type_instance.position > section.default_question_count:
+        position = data.get('position')
+        if position and section:
+            if position > section.default_question_count:
                 raise serializers.ValidationError(
-                    f"QuestionType position exceeds section's default_question_count ({section.default_question_count})."
+                    f"Position exceeds section's default_question_count ({section.default_question_count})."
                 )
         return data
 
     class Meta:
         model = Question
         fields = [
-            'id', 'admin_id', 'section_id', 'question_text', 'description', 'question_image',
+            'id', 'admin_id', 'section_id', 'position', 'question_text', 'description', 'question_image',
             'description_image', 'option_1', 'option_2', 'option_3', 'option_4', 'option_5',
-            'correct_option', 'level', 'language_code', 'type_id', 'created_at'
+            'correct_option', 'level', 'language_code', 'created_at'
         ]
 
 class AddOptionSerializer(serializers.Serializer):
