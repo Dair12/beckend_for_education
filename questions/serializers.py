@@ -2,36 +2,53 @@ from rest_framework import serializers
 from .models import Question, QuestionType
 from exam_sections.models import Section
 from users.models import User
+import base64
 
 class QuestionTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionType
         fields = ['id', 'name']
 
-
 class BulkQuestionCreateSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         questions = [Question(**item) for item in validated_data]
         return Question.objects.bulk_create(questions)
+
+class Base64ImageField(serializers.Field):
+    def to_internal_value(self, data):
+        if not isinstance(data, str):
+            raise serializers.ValidationError('Expected a base64 string')
+
+        try:
+            if ',' in data:
+                data = data.split(',')[1]
+            data = data.strip()
+            data += '=' * (-len(data) % 4)  # padding
+            return base64.b64decode(data)
+        except Exception as e:
+            raise serializers.ValidationError('Invalid base64 string')
+
+    def to_representation(self, value):
+        if value is None:
+            return None
+        return 'data:image/png;base64,' + base64.b64encode(value).decode('utf-8')
 
 class QuestionSerializer(serializers.ModelSerializer):
     admin_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='admin')
     section_id = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), source='section')
     type_id = serializers.PrimaryKeyRelatedField(queryset=QuestionType.objects.all(), source='type', allow_null=True)
 
+    question_image = Base64ImageField(required=False, allow_null=True)
+    description_image = Base64ImageField(required=False, allow_null=True)
+
     def validate(self, data):
-        # Проверяем, что type_id соответствует допустимому QuestionType для раздела
         section = data.get('section')
         type_instance = data.get('type')
 
         if type_instance:
-            # Проверяем, что QuestionType принадлежит указанному разделу
             if type_instance.section != section:
-                raise serializers.ValidationError(
-                    "QuestionType does not belong to the specified section."
-                )
-            # Проверяем, что position QuestionType не превышает default_question_count
-            if type_instance.position > section.default_question_count:
+                raise serializers.ValidationError("QuestionType does not belong to the specified section.")
+            if hasattr(section, 'default_question_count') and type_instance.position > section.default_question_count:
                 raise serializers.ValidationError(
                     f"QuestionType position exceeds section's default_question_count ({section.default_question_count})."
                 )
@@ -39,11 +56,10 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        list_serializer_class = BulkQuestionCreateSerializer
         fields = [
-            'id', 'admin_id', 'section_id', 'question_text', 'image_path',
-            'option_1', 'option_2', 'option_3', 'option_4', 'option_5', 'correct_option',
-            'level', 'language_code', 'type_id', 'created_at'
+            'id', 'admin_id', 'section_id', 'question_text', 'description', 'question_image',
+            'description_image', 'option_1', 'option_2', 'option_3', 'option_4', 'option_5',
+            'correct_option', 'level', 'language_code', 'type_id', 'created_at'
         ]
 
 class AddOptionSerializer(serializers.Serializer):

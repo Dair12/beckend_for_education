@@ -24,7 +24,9 @@ class Question(models.Model):
     admin = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='questions')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='questions')  # Ссылка на Section
     question_text = models.TextField()
-    image_path = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)  # Optional description field
+    question_image = models.BinaryField(null=True, blank=True)  # BinaryField for question image
+    description_image = models.BinaryField(null=True, blank=True)  # BinaryField for description image
     option_1 = models.TextField()
     option_2 = models.TextField()
     option_3 = models.TextField(null=True, blank=True)
@@ -34,7 +36,7 @@ class Question(models.Model):
     level = models.CharField(max_length=10, choices=LEVEL_CHOICES)
     language_code = models.CharField(max_length=10)
     type = models.ForeignKey(QuestionType, on_delete=models.SET_NULL, null=True, blank=True, related_name='questions')
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at =  models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'questions'
