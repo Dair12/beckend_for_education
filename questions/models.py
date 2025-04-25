@@ -11,7 +11,7 @@ class Question(models.Model):
 
     admin = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='questions')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='questions')
-    position = models.PositiveIntegerField()  # Ensure this field is present
+    position = models.PositiveIntegerField(null=True, blank=True)
     question_text = models.TextField()
     description = models.TextField(null=True, blank=True)
     question_image = models.BinaryField(null=True, blank=True)
@@ -28,7 +28,6 @@ class Question(models.Model):
 
     class Meta:
         db_table = 'questions'
-        unique_together = ('section', 'position')  # Ensure this is correct
 
     def __str__(self):
         return f"{self.question_text[:50]}..."

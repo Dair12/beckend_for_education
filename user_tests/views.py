@@ -23,10 +23,27 @@ class UserTestViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user_test = serializer.save()
 
-        # Логика генерации вопросов для теста на основе section
-        section = user_test.section
-        questions = Question.objects.filter(section=section)[:section.default_question_count]  # Фильтрация по section
-        for index, question in enumerate(questions, start=1):
+        # Extract validated data
+        section = serializer.validated_data['section']
+        language_code = serializer.validated_data['language_code']
+        questions_count = serializer.validated_data['questions_count']
+        level = serializer.validated_data.get('level')
+
+        # Build the question query
+        query = Question.objects.filter(section=section, language_code=language_code)
+        if level:
+            query = query.filter(level=level)
+
+        # Select random questions
+        questions = list(query)
+        if len(questions) < questions_count:
+            user_test.delete()  # Clean up the created test
+            return Response({
+                "error": f"Not enough questions available. Requested: {questions_count}, Available: {len(questions)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        selected_questions = random.sample(questions, questions_count)
+        for index, question in enumerate(selected_questions, start=1):
             TestQuestion.objects.create(
                 test=user_test,
                 variant_question=question,

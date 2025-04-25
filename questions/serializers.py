@@ -31,18 +31,32 @@ class Base64ImageField(serializers.Field):
 class QuestionSerializer(serializers.ModelSerializer):
     admin_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='admin')
     section_id = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), source='section')
-
+    position = serializers.IntegerField(required=False, allow_null=True)
     question_image = Base64ImageField(required=False, allow_null=True)
     description_image = Base64ImageField(required=False, allow_null=True)
 
     def validate(self, data):
         section = data.get('section')
         position = data.get('position')
-        if position and section:
-            if position > section.default_question_count:
-                raise serializers.ValidationError(
-                    f"Position exceeds section's default_question_count ({section.default_question_count})."
-                )
+
+        if section:
+            if section.has_fixed_structure:
+                # При фиксированной структуре position обязателен
+                if position is None:
+                    raise serializers.ValidationError({
+                        'position': "Position is required for sections with fixed structure."
+                    })
+                elif position > section.default_question_count:
+                    raise serializers.ValidationError({
+                        'position': f"Position exceeds section's default_question_count ({section.default_question_count})."
+                    })
+            else:
+                # При случайной структуре position должен быть None
+                if position is not None:
+                    raise serializers.ValidationError({
+                        'position': "Position must be null for sections without fixed structure."
+                    })
+
         return data
 
     class Meta:
