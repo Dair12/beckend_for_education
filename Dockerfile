@@ -18,8 +18,8 @@ RUN pip install -r requirements.txt
 # Копируем остальные файлы проекта
 COPY . /app/
 
-# Открываем порт 8000
-EXPOSE 8000
+# Открываем порт 8080
+EXPOSE 8080
 
 # Команда по умолчанию для запуска приложения
-CMD ["gunicorn", "beckend_for_education.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "beckend_for_education.wsgi:application", "--bind", "0.0.0.0:8080"]
