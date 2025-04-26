@@ -13,6 +13,7 @@ COPY requirements.txt /app/
 
 # Устанавливаем зависимости
 RUN pip install --upgrade pip
+RUN pip install "setuptools<66"
 RUN pip install -r requirements.txt
 
 # Копируем остальные файлы проекта
