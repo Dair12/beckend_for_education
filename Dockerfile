@@ -1,35 +1,31 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-# Установить системные зависимости сразу в одном RUN
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    libcairo2-dev \
-    gdal-bin \
-    libgdal-dev \
-    libxml2-dev \
-    libxslt-dev \
-    pkg-config \
+# Установка всех нужных системных библиотек
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
     python3-dev \
-    libopenblas-dev \
-    liblapack-dev \
- && rm -rf /var/lib/apt/lists/*
+    libsqlite3-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libffi-dev \
+    libssl-dev \
+    default-libmysqlclient-dev \
+    cmake \
+    && apt-get clean
 
-WORKDIR /app
-
-# Копируем только requirements.txt отдельно
-COPY requirements.txt .
-
-# Установим сначала только Cython и numpy
-RUN pip install --upgrade pip \
- && pip install Cython numpy
-
-# Потом установим остальные зависимости
-RUN pip install -r requirements.txt
-
-# Копируем остальной код проекта
+# Копируем проект
 COPY . .
 
+# Устанавливаем Python зависимости
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Открываем порт
 EXPOSE 8080
 
+# Запуск приложения
 CMD ["gunicorn", "beckend_for_education.wsgi:application", "--bind", "0.0.0.0:8080"]
