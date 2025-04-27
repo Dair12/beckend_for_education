@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# Установка всех нужных системных библиотек
+# Установка всех системных зависимостей
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -15,17 +15,19 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     default-libmysqlclient-dev \
     cmake \
+    libcairo2-dev \
+    pkg-config \
     && apt-get clean
 
 # Копируем проект
 COPY . .
 
-# Устанавливаем Python зависимости
+# Обновляем pip и устанавливаем Python зависимости
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Открываем порт
 EXPOSE 8080
 
-# Запуск приложения
+# Запуск
 CMD ["gunicorn", "beckend_for_education.wsgi:application", "--bind", "0.0.0.0:8080"]
