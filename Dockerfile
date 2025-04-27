@@ -1,11 +1,14 @@
 FROM python:3.11-slim
 
 RUN apt-get update && apt-get install -y \
+    cmake \
+    libcairo2-dev \
     gdal-bin \
     libgdal-dev \
     build-essential \
     libxml2-dev \
     libxslt-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
