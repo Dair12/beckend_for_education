@@ -1,34 +1,22 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Установка всех системных зависимостей
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    make \
-    python3-dev \
-    libsqlite3-dev \
-    libjpeg-dev \
-    zlib1g-dev \
-    libxml2-dev \
-    libxslt1-dev \
-    libffi-dev \
-    libssl-dev \
-    default-libmysqlclient-dev \
-    cmake \
-    libcairo2-dev \
-    pkg-config \
-    && apt-get clean
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Копируем проект
-COPY . .
+COPY requirements.txt .
 
-# Обновляем pip и устанавливаем Python зависимости
 RUN pip install --upgrade pip
-RUN pip install torch==1.11.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 RUN pip install -r requirements.txt
 
-# Открываем порт
+COPY . .
+
 EXPOSE 8080
 
-# Запуск
 CMD ["gunicorn", "beckend_for_education.wsgi:application", "--bind", "0.0.0.0:8080"]
