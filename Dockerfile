@@ -1,8 +1,9 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y \
-    cmake \
+# Установить системные зависимости сразу в одном RUN
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    cmake \
     libcairo2-dev \
     gdal-bin \
     libgdal-dev \
@@ -12,16 +13,21 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     libopenblas-dev \
     liblapack-dev \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Копируем только requirements.txt отдельно
 COPY requirements.txt .
 
-RUN pip install --upgrade pip
-RUN pip install "setuptools<66"
+# Установим сначала только Cython и numpy
+RUN pip install --upgrade pip \
+ && pip install Cython numpy
+
+# Потом установим остальные зависимости
 RUN pip install -r requirements.txt
 
+# Копируем остальной код проекта
 COPY . .
 
 EXPOSE 8080
