@@ -4,8 +4,11 @@ from .models import UserAnswer
 from user_tests.models import UserTest
 from questions.models import Question
 from users.models import User
+from questions.serializers import QuestionSerializer  # Import QuestionSerializer
 
 class UserAnswerSerializer(serializers.ModelSerializer):
+    variant_question = QuestionSerializer(read_only=True)  # Include full question details
+
     class Meta:
         model = UserAnswer
         fields = ['id', 'test', 'variant_question', 'user', 'chosen_option_number', 'is_correct', 'answered_at']
@@ -32,7 +35,6 @@ class AnswerItemSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     chosen_option = serializers.IntegerField()
     is_correct = serializers.BooleanField()
-
 
 class ResultSubmissionSerializer(serializers.Serializer):
     test_id = serializers.IntegerField()
