@@ -7,10 +7,15 @@ from .serializers import QuestionSerializer, AddOptionSerializer, AddMultipleOpt
 
 class BulkQuestionCreateView(APIView):
     def post(self, request):
+        # Ensure the serializer handles a list of question data, including base64 images
         serializer = QuestionSerializer(data=request.data, many=True)
         if serializer.is_valid():
+            # Save the validated questions, which will process question_image and description_image
             serializer.save()
-            return Response({"message": f"{len(serializer.data)} questions created successfully."}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": f"{len(serializer.data)} questions created successfully."},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class QuestionListView(generics.ListAPIView):
