@@ -24,6 +24,7 @@ COPY . .
 
 # Обновляем pip и устанавливаем Python зависимости
 RUN pip install --upgrade pip
+RUN pip install torch==1.11.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 RUN pip install -r requirements.txt
 
 # Открываем порт

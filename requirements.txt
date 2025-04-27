@@ -487,7 +487,6 @@ tldextract==3.3.0
 toml==0.10.2
 tomli==2.0.1
 toolz==0.11.2
-torch==1.11.0+cpu
 torchaudio==0.11.0+rocm4.5.2
 torchvision==0.12.0+cpu
 tornado==6.2
