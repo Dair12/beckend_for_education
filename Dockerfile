@@ -19,4 +19,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["gunicorn", "beckend_for_education.wsgi:application", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "education.wsgi:application", "--bind", "0.0.0.0:8080"]
