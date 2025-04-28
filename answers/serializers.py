@@ -4,10 +4,10 @@ from .models import UserAnswer
 from user_tests.models import UserTest
 from questions.models import Question
 from users.models import User
-from questions.serializers import QuestionSerializer  # Import QuestionSerializer
+from questions.serializers import QuestionSerializer
 
 class UserAnswerSerializer(serializers.ModelSerializer):
-    variant_question = QuestionSerializer(read_only=True)  # Include full question details
+    variant_question = QuestionSerializer(read_only=True)
 
     class Meta:
         model = UserAnswer
